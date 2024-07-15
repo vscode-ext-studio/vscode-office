@@ -222,6 +222,10 @@
 				"command": "office.html.preview",
 				"key": "ctrl+shift+v",
 				"when": "editorTextFocus && editorLangId == html"
+			},
+			{
+				"command": "office.markdown.switch",
+				"key": "ctrl+alt+e"
 			}
 		],
 		"menus": {
