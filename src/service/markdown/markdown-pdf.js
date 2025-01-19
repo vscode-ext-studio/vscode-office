@@ -9,6 +9,7 @@ const markdownItPlantuml = require("markdown-it-plantuml")
 const markdownItToc = require("markdown-it-toc-done-right")
 const markdownItAnchor = require("markdown-it-anchor")
 const { exportByType } = require('./html-export')
+const markdownItMermaid = require('markdown-it-mermaid').default;
 
 async function convertMarkdown(inputMarkdownFile, config) {
 
@@ -17,8 +18,20 @@ async function convertMarkdown(inputMarkdownFile, config) {
   const text = fs.readFileSync(inputMarkdownFile).toString()
   const content = convertMarkdownToHtml(inputMarkdownFile, type, text, config)
   const html = mergeHtml(content, uri)
-  await exportByType(inputMarkdownFile, html, type, config)
 
+  // insert mermaid script
+  const $ = require("cheerio").load(html);
+  const containsMermaid = $('.mermaid').length > 0;
+  if (containsMermaid) {
+      const mermaidScript = `
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>mermaid.initialize({startOnLoad:true});</script>
+    `;
+
+    $('body').append(mermaidScript);
+  }
+
+  await exportByType(inputMarkdownFile, $.html(), type, config)
 }
 
 
@@ -100,6 +113,7 @@ function convertMarkdownToHtml(filename, type, text, config) {
       .use(markdownItToc)
       .use(markdownItKatex)
       .use(markdownItPlantuml)
+      .use(markdownItMermaid)
 
     return md.render(text)
 
